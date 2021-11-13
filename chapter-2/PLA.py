@@ -51,11 +51,11 @@ def init_hyperplane(X):
     w = np.random.randn(3,1)
     return X,w
 
-## 训练
+## 训练(线性可分)
 def train(X,y):
     ### 初始化参数
     X,w = init_hyperplane(X)
-    for i in range(X.shape[0]):
+    while(True):
         score = np.dot(X,w)
         y_train = np.ones_like(y)
         # print(y_train)
@@ -65,6 +65,30 @@ def train(X,y):
         if count_error > 0:
             t = np.where(y!=y_train)[0][0]
             w += y[t]*X[t,:].reshape((3,1))
+        else:
+            break
+    return w
+
+## 训练(线性不可分)
+def train_no_pla(X,y):
+    X,w = init_hyperplane(X)###初始化参数
+    score = np.dot(X,w)
+    y_train = np.ones_like(y)
+    positions_neg = np.where(score < 0)[0]
+    y_train[positions_neg] = -1
+    count_error_1 = len(np.where(y!=y_train)[0])
+    if count_error_1 > 0:
+        r = np.random.choice(count_error_1)
+        t = np.where(y!=y_train)[0][r]
+        w1 = w + y[t]*X[t].reshape((3,1))
+
+        score = np.dot(X,w1)
+        y_train = np.ones_like(y)
+        positions_neg = np.where(score < 0)[0]
+        y_train[positions_neg] = -1
+        count_error_2 = len(np.where(y!=y_train)[0])
+        if count_error_2 < count_error_1:
+            w = w1
     return w
 
 
@@ -72,9 +96,9 @@ def train(X,y):
 
 
 if __name__ == '__main__':
-    X,y = read_data('./data/data1_pla.csv')## 读取数据
+    X,y = read_data('./data/data2.csv')## 读取数据
     # print(X)
     X = feature_normalization(X)## 特征归一化处理
     data_show(X)
-    w = train(X,y) ##训练数据
+    w = train_no_pla(X, y)
     data_show(X,w)
